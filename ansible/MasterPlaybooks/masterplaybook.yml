@@ -1,5 +1,5 @@
 ---
-- name: Download and install the template used by cloud init template. 
+- name: turns a cloudinit.img into a proxmox template. 
   hosts: proxmoxnodes
   roles:
     - homeserver.vms.maketemplate

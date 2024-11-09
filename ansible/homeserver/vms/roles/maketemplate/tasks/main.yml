@@ -6,7 +6,7 @@
 
 - name: Starting template
   ansible.builtin.shell:
-    cmd: "qm create {{ template_id }} --name {{ template_name }} --net0 virtio,bridge=vmbr0 --memory 4000 --cores 4"
+    cmd: "qm create {{ template_id }} --name {{ template_name }} --net0 virtio,bridge=vmbr0 --memory 2000 --cores 2"
     chdir: /var/lib/vz/template/iso
 
 - name: Add disk to image
@@ -29,7 +29,7 @@
     cmd: "qm set {{ template_id }} --ide2 local-zfs:cloudinit"
     chdir: /var/lib/vz/template/iso
 
-- name: adding serial sockets
+- name: adding serial socket
   ansible.builtin.shell:
     cmd: "qm set {{ template_id }} --serial0 socket --vga serial0"
     chdir: /var/lib/vz/template/iso
