@@ -4,9 +4,9 @@
     src: noble-server-cloudimg-amd64.img
     dest: /var/lib/vz/template/iso
 
-- name: Creating template
+- name: Starting template
   ansible.builtin.shell:
-    cmd: qm create 9000 --name "ubuntu-2404-cloudinit-template" --net0 virtio,bridge=vmbr0
+    cmd: qm create 9000 --name "ubuntu-2404-cloudinit-template" --net0 virtio,bridge=vmbr0 --memory 4000 --cores 4
     chdir: /var/lib/vz/template/iso
 
 - name: Add disk to image

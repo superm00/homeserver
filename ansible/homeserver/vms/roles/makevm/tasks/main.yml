@@ -1,16 +1,16 @@
 ---
 # tasks file for makevm
-- name: "Adding qemu-guest-agent to image"
+- name: "Clone template"
   ansible.builtin.shell:
     cmd: qm clone 9000 999 --name test-clone-cloud-init 
     chdir: /var/lib/vz/template/iso
 
-- name: "Adding qemu-guest-agent to image"
+- name: "Setting compute and memory"
   ansible.builtin.shell:
     cmd: qm set 999 --memory 4000 --cores 4
     chdir: /var/lib/vz/template/iso
 
-- name: "Adding qemu-guest-agent to image"
+- name: "Setting vm"
   ansible.builtin.shell:
     cmd: qm start 999
     chdir: /var/lib/vz/template/iso
