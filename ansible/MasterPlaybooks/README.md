@@ -5,5 +5,5 @@ ansible-galaxy collection install -r requirements.yml --force
 
 ansible galaxy use the playbook.yaml
 ```
-ansible-playbook -i inv.yml playbook.yml
+ansible-playbook -i inv.yml masterplaybook.yml
 ```
