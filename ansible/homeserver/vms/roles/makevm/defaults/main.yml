@@ -1,2 +1,6 @@
 ---
-# defaults file for makevm
+vm_id: 101
+vm_name: test-vm
+vm_memory: 2000
+vm_cores: 2
+template_id: 1000

@@ -1,50 +1,50 @@
 ---
 - name: Copy the cloudimg across. 
   ansible.builtin.copy:
-    src: noble-server-cloudimg-amd64.img
+    src: "{{ img_file }}"
     dest: /var/lib/vz/template/iso
 
 - name: Starting template
   ansible.builtin.shell:
-    cmd: qm create 9000 --name "ubuntu-2404-cloudinit-template" --net0 virtio,bridge=vmbr0 --memory 4000 --cores 4
+    cmd: "qm create {{ template_id }} --name {{ template_name }} --net0 virtio,bridge=vmbr0 --memory 4000 --cores 4"
     chdir: /var/lib/vz/template/iso
 
 - name: Add disk to image
   ansible.builtin.shell:
-    cmd: qm importdisk 9000 noble-server-cloudimg-amd64.img local-zfs
+    cmd: "qm importdisk {{ template_id }} {{ img_file }} local-zfs"
     chdir: /var/lib/vz/template/iso
 
 - name: Adding file system to image
   ansible.builtin.shell:
-    cmd: qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-zfs:vm-9000-disk-0
+    cmd: "qm set {{ template_id }} --scsihw virtio-scsi-pci --scsi0 local-zfs:vm-{{ template_id }}-disk-0"
     chdir: /var/lib/vz/template/iso
 
 - name: Setting boot disk
   ansible.builtin.shell:
-    cmd: qm set 9000 --boot c --bootdisk scsi0
+    cmd: "qm set {{ template_id }} --boot c --bootdisk scsi0"
     chdir: /var/lib/vz/template/iso
 
 - name: Alocating local space.
   ansible.builtin.shell:
-    cmd: qm set 9000 --ide2 local-zfs:cloudinit
+    cmd: "qm set {{ template_id }} --ide2 local-zfs:cloudinit"
     chdir: /var/lib/vz/template/iso
 
 - name: adding serial sockets
   ansible.builtin.shell:
-    cmd: qm set 9000 --serial0 socket --vga serial0
+    cmd: "qm set {{ template_id }} --serial0 socket --vga serial0"
     chdir: /var/lib/vz/template/iso
 
 - name: enabling qemu-guest-agent
   ansible.builtin.shell:
-    cmd: qm set 9000 --agent enabled=1
+    cmd: "qm set {{ template_id }} --agent enabled=1"
     chdir: /var/lib/vz/template/iso
 
 - name: setting up ipconfig
   ansible.builtin.shell:
-    cmd: qm set 9000 --ipconfig0 ip=dhcp
+    cmd: "qm set {{ template_id }} --ipconfig0 ip=dhcp"
     chdir: /var/lib/vz/template/iso
 
 - name: Creating template.
   ansible.builtin.shell:
-    cmd: qm template 9000
+    cmd: "qm template {{ template_id }}"
     chdir: /var/lib/vz/template/iso

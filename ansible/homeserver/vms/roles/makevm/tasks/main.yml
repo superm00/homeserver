@@ -1,16 +1,15 @@
 ---
-# tasks file for makevm
 - name: "Clone template"
   ansible.builtin.shell:
-    cmd: qm clone 9000 999 --name test-clone-cloud-init 
+    cmd: "qm clone {{ template_id }} {{ vm_id }} --name {{ vm_name }}"
     chdir: /var/lib/vz/template/iso
 
 - name: "Setting compute and memory"
   ansible.builtin.shell:
-    cmd: qm set 999 --memory 4000 --cores 4
+    cmd: "qm set {{ vm_id }} --memory {{ vm_memory }} --cores {{ vm_cores }}"
     chdir: /var/lib/vz/template/iso
 
 - name: "Setting vm"
   ansible.builtin.shell:
-    cmd: qm start 999
+    cmd: "qm start {{ vm_id }}"
     chdir: /var/lib/vz/template/iso
