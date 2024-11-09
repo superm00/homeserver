@@ -1,12 +1,27 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+Creates a template on a proxmox server using a cloud init image. 
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+You need the base img. 
+
+See [Link](https://austinsnerdythings.com/2021/08/30/how-to-create-a-proxmox-ubuntu-cloud-init-image/) for where I got this guide from. 
+
+But to re-iterate the steps. 
+
+Download onto local machine the img at the files section.
+```
+wget https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+```
+
+Install libguestfs and install the qemu-guest-agent.
+```
+apt update -y && apt install libguestfs-tools -y
+virt-customize -a noble-server-cloudimg-amd64.img --install qemu-guest-agent
+```
 
 Role Variables
 --------------

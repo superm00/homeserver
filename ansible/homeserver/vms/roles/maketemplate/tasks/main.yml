@@ -1,23 +1,50 @@
 ---
-- name: Copy a file to a remote server
+- name: Copy the cloudimg across. 
   ansible.builtin.copy:
-    src: /path/to/local/file
-    dest: /path/on/remote/server
+    src: noble-server-cloudimg-amd64.img
+    dest: /var/lib/vz/template/iso
 
+- name: Creating template
+  ansible.builtin.shell:
+    cmd: qm create 9000 --name "ubuntu-2404-cloudinit-template" --net0 virtio,bridge=vmbr0
+    chdir: /var/lib/vz/template/iso
 
-# - name: Update apt cache
-#   ansible.builtin.apt:
-#     update_cache: yes
-#   become: true
+- name: Add disk to image
+  ansible.builtin.shell:
+    cmd: qm importdisk 9000 noble-server-cloudimg-amd64.img local-zfs
+    chdir: /var/lib/vz/template/iso
 
-# - name: "Install libguestfs-tools"
-#   ansible.builtin.apt:
-#     name: libguestfs-tools
-#     state: latest
-#   become: true
+- name: Adding file system to image
+  ansible.builtin.shell:
+    cmd: qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-zfs:vm-9000-disk-0
+    chdir: /var/lib/vz/template/iso
 
-# - name: "Adding qemu-guest-agent to image"
-#   ansible.builtin.shell:
-#     cmd: virt-customize -a noble-server-cloudimg-amd64.img --install qemu-guest-agent
-#     chdir: "../files"
-#   become: true
+- name: Setting boot disk
+  ansible.builtin.shell:
+    cmd: qm set 9000 --boot c --bootdisk scsi0
+    chdir: /var/lib/vz/template/iso
+
+- name: Alocating local space.
+  ansible.builtin.shell:
+    cmd: qm set 9000 --ide2 local-zfs:cloudinit
+    chdir: /var/lib/vz/template/iso
+
+- name: adding serial sockets
+  ansible.builtin.shell:
+    cmd: qm set 9000 --serial0 socket --vga serial0
+    chdir: /var/lib/vz/template/iso
+
+- name: enabling qemu-guest-agent
+  ansible.builtin.shell:
+    cmd: qm set 9000 --agent enabled=1
+    chdir: /var/lib/vz/template/iso
+
+- name: setting up ipconfig
+  ansible.builtin.shell:
+    cmd: qm set 9000 --ipconfig0 ip=dhcp
+    chdir: /var/lib/vz/template/iso
+
+- name: Creating template.
+  ansible.builtin.shell:
+    cmd: qm template 9000
+    chdir: /var/lib/vz/template/iso
