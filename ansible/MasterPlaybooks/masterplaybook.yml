@@ -1,0 +1,5 @@
+---
+- name: Download and install the template used by cloud init template. 
+  hosts: proxmoxnodes
+  roles:
+    - homeserver.vms.maketemplate

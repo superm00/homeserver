@@ -1,0 +1,23 @@
+---
+- name: Copy a file to a remote server
+  ansible.builtin.copy:
+    src: /path/to/local/file
+    dest: /path/on/remote/server
+
+
+# - name: Update apt cache
+#   ansible.builtin.apt:
+#     update_cache: yes
+#   become: true
+
+# - name: "Install libguestfs-tools"
+#   ansible.builtin.apt:
+#     name: libguestfs-tools
+#     state: latest
+#   become: true
+
+# - name: "Adding qemu-guest-agent to image"
+#   ansible.builtin.shell:
+#     cmd: virt-customize -a noble-server-cloudimg-amd64.img --install qemu-guest-agent
+#     chdir: "../files"
+#   become: true

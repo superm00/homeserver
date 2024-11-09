@@ -1,0 +1,11 @@
+variable "ssh_key" {
+  default = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCXMwEWNqAxIfqHRZR+LcyF4ILTxPaxLwMkLI4TdmCVlBM2WvMuLlCh4d/7mnbhHinLvS2taA+ZOV1tYeXk9LznDVCdGSIbKIi1hUvbVnsCxNlYwyJE7x9xLhtcszyQHACKukOKbhwo5Hx4zTPIOOEzVaoSOJzPJuZopCfQ3mJrApRBC+zInVwHBbJ+mSKRCWDKQ1sBLj2FWpPYE7lBUMeD3iMIUuonNqrODA7MMeIwZJNUhtw/obgUBi7EnQRX1UN1zzdr1BAVWGvVSPW+gA9AtIKsInZ8fmHu2cvBQQQhbRKFXRWnqedK6h5hayKrPNgcTRj1KZEMXRvhKciwf8oAj7ENYkq+/oT73BDHQ7e91OQgqOUw28lfuth34Vh00kN1TXFxs+1qMU3SzUNHZQluorGlybFiv+6E6sDdsP6l+T7dfkicYK+cKSA5uZqEA2V9Ks0bJJD8x9kVRo68QDrEbBZ6E2YOGwMZZzvkobYEKz7ZXSAWAdjImXFIcXxiEXqPRz3OUxPazVqD13kTyuzX6weNJ/kVK2IYiaXUD7b6LF85gLtVAP0B7V89f8qBfv2j3bEDMGEkhy7CTcysLyYSeEvNOIwv1/ngOs8CLd7cqkQmUvcXLzRMFCLl7fEH/qfDAfqvPHI/Jad5keyyJKa+h7jbzcWom2QbGUI6hD2tEw== matt@matt-dev"
+}
+
+variable "proxmox_host" {
+    default = "matt"
+}
+
+variable "template_name" {
+    default = "ubuntu-2404-cloudinit-template"
+}
