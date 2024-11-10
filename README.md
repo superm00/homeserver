@@ -33,7 +33,8 @@ The collection of roles of standard processes also this can be used by AWX easil
 
 #### reverse proxy
 
-nginix ansible roles.
+nginix server
+Using made ansible roles (vm role etc).
 
 #### local DNS?
 

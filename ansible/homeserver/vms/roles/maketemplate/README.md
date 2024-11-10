@@ -26,28 +26,43 @@ virt-customize -a noble-server-cloudimg-amd64.img --install qemu-guest-agent
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+```YAML
+img_file: noble-server-cloudimg-amd64.img
+template_id: 1000
+template_name: ubuntu-2404-cloudinit-template
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+No dependant playbooks/roles,
+Needs ssh access to the proxmox server.
+A user that can create templates and configure vms. 
+Needs you to pull down the server img and follow the steps above before running. 
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Playbook:
+```YAML
+- name: turns a cloudinit.img into a proxmox template. 
+  hosts: proxmoxnodes
+  var_file: template_vars.yml
+  roles:
+    - homeserver.vms.maketemplate
+```
+var:
+```YAML
+img_file: noble-server-cloudimg-amd64.img
+template_id: 1000
+template_name: ubuntu-2404-cloudinit-template
+```
+inv:
+```YAML
+proxmoxnodes:
+  hosts: 
+    matt:
+      ansible_host: <ip>
+      ansible_user: <username>
+      ansible_password: <password>
+```

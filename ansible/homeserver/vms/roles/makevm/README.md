@@ -1,38 +1,60 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+Creates a VM from template with spesific hardware configuration given in vars. 
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+A Proxmox server setup with ssh access to the server with a user that can configure and create vms. 
+Needs a template setup with a cloudinit image. See homeserver.vms.maketemplate.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+```YAML
+vm_id: 101
+vm_name: test-vm
+vm_memory: 2000
+vm_cores: 2
+template_id: 1000
+ssh_key: "<sshkey>"
+resize_amount: 10G
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Needs a template setup with a cloudinit image. See homeserver.vms.maketemplate.
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Playbook:
+```YAML
+- name: Creates a VM out of a existing proxmox template with spesific hardware configruation.
+  hosts: proxmoxnodes
+  var_file: template_vars.yml
+  roles:
+    - homeserver.vms.makevm
+```
+var:
+```YAML
+vm_id: 101
+vm_name: test-vm
+vm_memory: 2000
+vm_cores: 2
+template_id: 1000
+ssh_key: "<sshkey>"
+resize_amount: 10G
+```
+inv:
+```YAML
+proxmoxnodes:
+  hosts: 
+    matt:
+      ansible_host: <ip>
+      ansible_user: <username>
+      ansible_password: <password>
+```
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).

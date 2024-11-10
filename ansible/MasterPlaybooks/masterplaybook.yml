@@ -1,10 +1,10 @@
 ---
-- name: turns a cloudinit.img into a proxmox template. 
+- name: Turns a cloudinit.img into a proxmox template. 
   hosts: proxmoxnodes
   roles:
     - homeserver.vms.maketemplate
 
-- name: Download and install the template used by cloud init template. 
+- name: Creates a VM out of a existing proxmox template with spesific hardware configruation.
   hosts: proxmoxnodes
   roles:
     - homeserver.vms.makevm
