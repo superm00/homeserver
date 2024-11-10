@@ -20,21 +20,24 @@ Contains a colection (homeserver) and folders containing playbooks that can be u
 
 The collection of roles of standard processes also this can be used by AWX easily in the future.
 
-##### k8
+##### /k8
 
 
 
-##### vms
+##### /vms
 
 - maketemplate
 - makevm
 
-#### firewall
+#### /MasterPlaybooks/
+
+Contains the playbooks that run the roles and vars together to build the current in use deployment. 
 
 #### reverse proxy
 
-nginix server
+Using nginix server
 Using made ansible roles (vm role etc).
 
-#### local DNS?
+#### vpn
 
+Using Wireshark

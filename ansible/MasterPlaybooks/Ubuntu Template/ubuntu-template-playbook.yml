@@ -1,0 +1,7 @@
+---
+- name: Turns a cloudinit.img into a proxmox template. 
+  hosts: proxmoxnodes
+  vars_files: 
+    - ubuntu-template-var.yml
+  roles:
+    - homeserver.vms.maketemplate
