@@ -4,6 +4,11 @@
     cmd: "qm clone {{ template_id }} {{ vm_id }} --name {{ vm_name }}"
     chdir: /var/lib/vz/template/iso
 
+- name: "Setting user name"
+  ansible.builtin.shell:
+    cmd: "qm set {{ vm_id }} --ciuser {{ vm_name }}"
+    chdir: /var/lib/vz/template/iso
+
 - name: "Setting compute and memory"
   ansible.builtin.shell:
     cmd: "qm set {{ vm_id }} --memory {{ vm_memory }} --cores {{ vm_cores }}"
@@ -28,6 +33,11 @@
   ansible.builtin.shell:
     cmd: "rm tmpkey.pub"
     chdir: /tmp
+
+- name: Setting up static address
+  ansible.builtin.shell:
+    cmd: "qm set {{ template_id }} --ipconfig0 ip={{ static_ip }}"
+    chdir: /var/lib/vz/template/iso
 
 - name: "Starting vm"
   ansible.builtin.shell:

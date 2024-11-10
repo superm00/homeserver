@@ -20,6 +20,7 @@ vm_cores: 2
 template_id: 1000
 ssh_key: "<sshkey>"
 resize_amount: 10G
+static_ip: dhcp
 ```
 
 Dependencies
@@ -47,6 +48,7 @@ vm_cores: 2
 template_id: 1000
 ssh_key: "<sshkey>"
 resize_amount: 10G
+static_ip: 192.168.*.*/24
 ```
 inv:
 ```YAML

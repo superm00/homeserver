@@ -39,11 +39,6 @@
     cmd: "qm set {{ template_id }} --agent enabled=1"
     chdir: /var/lib/vz/template/iso
 
-- name: setting up ipconfig
-  ansible.builtin.shell:
-    cmd: "qm set {{ template_id }} --ipconfig0 ip=dhcp"
-    chdir: /var/lib/vz/template/iso
-
 - name: Creating template.
   ansible.builtin.shell:
     cmd: "qm template {{ template_id }}"
