@@ -1,4 +1,4 @@
 collections: 
   - name: homeserver.vms 
-    source: ../homeserver/
+    source: ../../homeserver/
     type: subdirs

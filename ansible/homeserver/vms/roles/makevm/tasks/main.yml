@@ -36,7 +36,12 @@
 
 - name: Setting up static address
   ansible.builtin.shell:
-    cmd: "qm set {{ vm_id }} --ipconfig0 ip={{ static_ip }}"
+    cmd: "qm set {{ vm_id }} --ipconfig0 ip={{ static_ip }},gw=192.168.86.1"
+    chdir: /var/lib/vz/template/iso
+
+- name: Setting up DNS Server
+  ansible.builtin.shell:
+    cmd: "qm set {{ vm_id }} --nameserver 8.8.8.8"
     chdir: /var/lib/vz/template/iso
 
 - name: "Starting vm"
