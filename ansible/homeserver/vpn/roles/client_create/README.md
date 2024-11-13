@@ -1,38 +1,89 @@
-Role Name
+client_create
 =========
 
-A brief description of the role goes here.
+This role sets up wireguard vpn user it creates a signle user from the given var file, it also restarts the vpn during this so adding users can cause a minor interuption.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+A vm that has ssh access.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+```YAML
+name: 
+client_ip: 
+return_dir: ~/homeserver/vpn_configs/
+```
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Needs a homeserver.vpn.init to have been setup. 
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Master playbook
+```YAML
+- name: Creates a VM out of a existing proxmox template with a spesific hardware configruation.
+  hosts: proxmoxnodes
+  tags:
+    - vm_setup
+  vars_files: 
+    - vpn-var.yml
+  roles:
+    - homeserver.vms.makevm
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+- name: Creates a wireguard vpn with no clients
+  hosts: vpn
+  tags:
+  - wireguard_setup
+  roles:
+    - homeserver.vpn.init
 
-License
--------
+- name: Creates wireguard vpn client -- Matt
+  hosts: vpn
+  tags:
+  - create_users
+  vars_files: 
+    - vpn-clients/vpn-var-matt.yml
+  roles:
+    - homeserver.vpn.client_create
 
-BSD
+- name: Creates wireguard vpn client -- Jonathan
+  hosts: vpn
+  tags:
+  - create_users
+  vars_files: 
+    - vpn-clients/vpn-var-jonathan.yml
+  roles:
+    - homeserver.vpn.client_create
+```
 
-Author Information
-------------------
+inv.yml
+```YAML
+proxmoxnodes:
+  hosts: 
+    matt:
+      ansible_host: 
+      ansible_user: 
+      ansible_password: 
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+vpns:
+  hosts: 
+    vpn:
+      ansible_host: 
+      ansible_user: 
+      ansible_ssh_private_key_file: 
+      server_ip: 192.168.211.1/24
+      server_port: 51820
+```
+
+var.yml
+```YAML
+name: 
+client_ip: 
+return_dir: ~/homeserver/vpn_configs/
+```
