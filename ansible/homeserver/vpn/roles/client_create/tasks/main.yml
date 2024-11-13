@@ -1,4 +1,9 @@
 ---
+- name: "Checking if private key file exists"
+  ansible.builtin.stat:
+    path: /etc/wireguard/keys/client_{{ name }}_private.key
+  register: user_exists 
+
 - name: Install Wiregurad and set up vpn
   block:
   - name: "Creating the server_private.key and server public_key"
@@ -66,3 +71,4 @@
       chdir: /etc/wireguard/
 
   become: true
+  when: not user_exists.stat.exists
