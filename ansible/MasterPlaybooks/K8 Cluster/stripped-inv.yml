@@ -1,0 +1,23 @@
+proxmoxnodes:
+  hosts: 
+    host:
+
+controllers:
+  hosts: 
+    controller:
+      k8_version: v1.31.0
+      cilium_version: 1.16.5
+      cluster_cidr: 10.0.0.0/16
+      ingress_ip: 192.168.60.XXX
+
+workers:
+  hosts: 
+    worker1:
+      ansible_ssh_private_key_file: /home/matt/Documents/git/homeserver/ssh_keys/worker1
+      new_disk: /dev/sdb
+    worker2:
+      ansible_ssh_private_key_file: /home/matt/Documents/git/homeserver/ssh_keys/worker2
+      new_disk: /dev/sdb
+    worker3:
+      ansible_ssh_private_key_file: /home/matt/Documents/git/homeserver/ssh_keys/worker3
+      new_disk: /dev/sdb

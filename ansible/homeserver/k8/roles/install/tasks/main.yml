@@ -1,0 +1,218 @@
+---
+- name: Pre Install dependants
+  block:
+  - name: Comment out swap entry in /etc/fstab
+    ansible.builtin.lineinfile:
+      path: /etc/fstab
+      regexp: '^([^#].*swap.*)'
+      line: '#\1'
+      state: present
+
+  - name: Disable currently active swap
+    ansible.builtin.command: swapoff -a
+
+  - name: change config to enable ipv4 forwarding
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      regexp: '^net.ipv4.ip_forward'
+      line: 'net.ipv4.ip_forward=1'
+      state: present
+
+  - name: Apply the update config
+    ansible.builtin.command: sysctl -p
+
+  become: true
+
+- name: Container runtime install
+  block:
+  - name: Download the Containerd Binary
+    ansible.builtin.get_url:
+      url: https://github.com/containerd/containerd/releases/download/v2.0.0/containerd-2.0.0-linux-amd64.tar.gz
+      dest: /tmp/containerd_bin.tar.gz
+
+  - name: Decompress the Containered Binary
+    ansible.builtin.shell:
+      cmd: tar Cxzvf /usr/local containerd_bin.tar.gz
+      chdir: /tmp/
+
+  - name: Fetch config from webpage
+    ansible.builtin.uri:
+      url: https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+      return_content: yes
+    register: config_content
+
+  - name: Create a directory for a local file
+    ansible.builtin.file:
+      path: /usr/local/lib/systemd/system
+      state: directory
+      mode: '0755'
+
+  - name: Save the config to a local file
+    ansible.builtin.copy:
+      content: "{{ config_content.content }}"
+      dest: /usr/local/lib/systemd/system/containerd.service
+
+  - name: Reload systemd daemon
+    ansible.builtin.shell:
+      cmd: systemctl daemon-reload
+      chdir: /tmp
+
+  - name: Restarting and making sure containerd is enabled by default
+    ansible.builtin.systemd:
+      name: containerd
+      state: restarted
+      enabled: yes
+
+  - name: Download the runc binary
+    ansible.builtin.get_url:
+      url: https://github.com/opencontainers/runc/releases/download/v1.2.2/runc.amd64
+      dest: /tmp/runc.amd64
+
+  - name: Create a directroy for runc
+    ansible.builtin.file:
+      path: /usr/local/sbin/
+      state: directory
+      mode: '0755'
+
+  - name: Install runc
+    ansible.builtin.shell:
+      cmd: install -m 755 runc.amd64 /usr/local/sbin/runc
+      chdir: /tmp
+
+  - name: Download the CNI
+    ansible.builtin.get_url:
+      url: https://github.com/containernetworking/plugins/releases/download/v1.6.0/cni-plugins-linux-amd64-v1.6.0.tgz
+      dest: /tmp/cni-plugins-linux-amd64.tgz
+
+  - name: Create a directory for CNI
+    ansible.builtin.file:
+      path: /opt/cni/bin
+      state: directory
+      mode: '0755'
+
+  - name: Exract the CNI
+    ansible.builtin.shell:
+      cmd: tar Cxzvf /opt/cni/bin cni-plugins-linux-amd64.tgz
+      chdir: /tmp
+
+  - name: Create a directory for CNI
+    ansible.builtin.file:
+      path: /etc/containerd/
+      state: directory
+      mode: '0755'
+
+  - name: Exract the containerd config
+    ansible.builtin.shell:
+      cmd: containerd config default > /etc/containerd/config.toml
+      chdir: /home
+
+  - name: Ensure a specific line is present after a given line
+    ansible.builtin.lineinfile:
+      path: /etc/containerd/config.toml
+      line: "            SystemdCgroup = true"
+      insertafter: "            BinaryName = ''"
+
+  - name: Restarting and making sure containerd is enabled by default
+    ansible.builtin.systemd:
+      name: containerd
+      state: restarted
+      enabled: yes
+  become: true
+
+- name: Install Kube* items.
+  block:
+  - name: Update the apt package index
+    ansible.builtin.apt:
+      update_cache: yes
+
+  - name: Install packages needed for kube* tools
+    ansible.builtin.apt:
+      name:
+       - apt-transport-https 
+       - ca-certificates 
+       - curl 
+       - gpg
+      state: present     
+
+  - name: Add the kube* repository signing key
+    ansible.builtin.shell:
+      cmd: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      chdir: /tmp
+
+  - name: Add the kube* repository
+    ansible.builtin.shell:
+      cmd: echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+      chdir: /tmp
+
+  # Ideally replace with the ansible stuff as its much more useful. 
+  # - name: Add the kube* repository signing key
+  #   ansible.builtin.apt_key:
+  #     url: "https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key"
+  #     state: present   
+
+  # - name: Add the kube* repository
+  #   ansible.builtin.apt_repository:
+  #     repo: "deb https://apt.kubernetes.io/ kubernetes-noble main"
+  #     state: present
+
+  - name: Update the apt package index
+    ansible.builtin.apt:
+      update_cache: yes
+
+  - name: Install kube* packages
+    ansible.builtin.apt:
+      name: 
+       - kubelet 
+       - kubeadm 
+       - kubectl
+      state: present     
+  become: true
+
+- name: Run Kubeadm init
+  block:
+  - name: Start K8
+    ansible.builtin.shell: 
+      cmd: "kubeadm init --kubernetes-version={{ k8_version }} --apiserver-advertise-address={{ ansible_host }} --control-plane-endpoint={{ ansible_host }} --pod-network-cidr={{ cluster_cidr }} --cri-socket=unix:///var/run/containerd/containerd.sock --skip-phases=addon/kube-proxy"
+      chdir: /home
+  become: true
+  when: "'controllers' in group_names"
+
+- name: Add Workers to the cluster
+  block:
+  - name: Create Kubeadm join token
+    ansible.builtin.shell: 
+      cmd: "kubeadm token create --print-join-command"
+      chdir: /home
+    register: kubeadm_worker_join
+    when: "'controllers' in group_names"
+
+  - name: Share join token with Workers
+    ansible.builtin.set_fact:
+      kubeadm_worker_join: "{{ kubeadm_worker_join }}"
+    when: "'controllers' in group_names"
+    delegate_to: "{{ item }}"
+    delegate_facts: true
+    with_items: "{{ groups['workers'] }}"
+
+  - name: Join workers to the cluster
+    ansible.builtin.shell: 
+      cmd: "{{ kubeadm_worker_join.stdout }}"
+      chdir: /home
+    when: "'workers' in group_names"
+  become: true
+
+- name: Enroll Kubectl creds
+  block:
+  - name: Make directory for creds
+    ansible.builtin.file: 
+      path: $HOME/.kube
+      state: directory
+      mode: "0755"
+
+  - name: Copy created creds to directory
+    ansible.builtin.copy: 
+      src: /etc/kubernetes/admin.conf
+      dest: $HOME/.kube/config
+      remote_src: yes
+  become: true
+  when: "'controllers' in group_names"
