@@ -1,6 +1,6 @@
 ### Information
 
-This playbook inits the vpn (using tag vm_setup and wireguard_setup). 
+This playbook inits a vpn (using tag vm_setup and wireguard_setup). 
 Then create a bloc for each user and a var for each user.
 See vpn-var-example.yml for an example of a var.
 
