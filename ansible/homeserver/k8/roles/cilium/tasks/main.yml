@@ -1,0 +1,35 @@
+---
+- name: Install Cilium CLI
+  block:
+  - name: Download Cilium's CLI tar
+    ansible.builtin.get_url:
+      url: https://github.com/cilium/cilium-cli/releases/download/v0.16.22/cilium-linux-amd64.tar.gz
+      dest: /tmp/cilium-linux-amd64.tar.gz
+
+  - name: Exract the CNI
+    ansible.builtin.shell:
+      cmd: tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
+      chdir: /tmp
+  become: true
+
+- name: Install Cilium
+  block:
+  - name: Install Cilium
+    ansible.builtin.shell:
+      cmd: "cilium install --version {{ cilium_version }} --set ipam.mode=kubernetes --set clusterCIDR={{ cluster_cidr }} --set ingressController.enabled=true --set ingressController.loadbalancerMode=dedicated --set kubeProxyReplacement=true"
+      chdir: /tmp
+
+  - name: Copy over Cilium IP Pool yaml
+    ansible.builtin.template:
+      src: ciliumippool.yaml
+      dest: /tmp/ciliumippool.yaml
+
+  - name: Pause for user confirmation of the launch of Cilium
+    ansible.builtin.pause:
+      prompt: "Pause for user confirmation of the launch of Cilium"
+
+  - name: Enable Ciliums IP Pool
+    ansible.builtin.shell:
+      cmd: "kubectl apply -f ciliumippool.yaml"
+      chdir: /tmp
+  become: true

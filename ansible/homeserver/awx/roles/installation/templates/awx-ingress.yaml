@@ -1,0 +1,28 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: awx-ingress
+  namespace: awx
+spec:
+  ingressClassName: cilium
+  rules:
+  - http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: awx-service
+            port:
+              number: 80
+---
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: awx-pool
+  namespace: awx-system
+spec:
+  blocks:
+  - start: {{ ingress_ip }}
+    stop: {{ ingress_ip }}

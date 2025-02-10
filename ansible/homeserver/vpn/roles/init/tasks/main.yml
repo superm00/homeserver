@@ -1,0 +1,60 @@
+---
+- name: Install Wiregurad and set up vpn
+  block:
+  - name: Install wireguard on the instance.
+    ansible.builtin.apt:
+      name: wireguard
+      state: present
+
+  - name: Create key directory
+    ansible.builtin.file:
+      path: /etc/wireguard/keys
+      state: directory
+      mode: '0755'
+
+  - name: "Creating the server_private.key and server public_key"
+    ansible.builtin.shell:
+      cmd: wg genkey | tee server_private.key | wg pubkey > server_public.key
+      chdir: /etc/wireguard/keys
+
+  - name: Read server_private.key contents
+    ansible.builtin.shell:
+      cmd: cat server_private.key
+      chdir: /etc/wireguard/keys
+    register: server_private_key
+
+  - name: Copy over wiregaurd template
+    ansible.builtin.template:
+      src: wg0.conf
+      dest: /etc/wireguard/wg0.conf
+
+  - name: Enable IP forwarding
+    ansible.builtin.shell: 
+      cmd: sed -i '/^#net.ipv4.ip_forward=1/s/^#//' /etc/sysctl.conf
+      chdir: /etc
+
+  - name: Restarting to enable IP forwarding
+    ansible.builtin.shell:
+      cmd: sysctl -p
+      chdir: /etc/wireguard/keys
+
+  - name: Adding ip table to forward traffic though vm
+    ansible.builtin.shell:
+      cmd: iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+      chdir: /etc/wireguard/keys
+
+  - name: Installing persitant iptables
+    ansible.builtin.apt:
+      name: iptables-persistent
+      state: present
+
+  - name: "Starting the vpn"
+    ansible.builtin.shell:
+      cmd: wg-quick up wg0
+      chdir: /etc/wireguard
+
+  - name: "Setting vpn up as service that will begin at boot"
+    ansible.builtin.shell:
+      cmd: systemctl enable wg-quick@wg0
+      chdir: /etc/wireguard
+  become: true

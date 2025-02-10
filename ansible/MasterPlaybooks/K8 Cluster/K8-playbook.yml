@@ -1,0 +1,74 @@
+---
+# - name: Creates a VM that is the controller
+#   hosts: proxmoxnodes
+#   vars_files: 
+#     - ./vars/controller-var.yml
+#   roles:
+#     - homeserver.vms.makevm
+
+# - name: Creates a VM that is worker1
+#   hosts: proxmoxnodes
+#   vars_files: 
+#     - ./vars/worker1-var.yml
+#   roles:
+#     - homeserver.vms.makevm
+
+# - name: Creates a VM that is worker2
+#   hosts: proxmoxnodes
+#   vars_files: 
+#     - ./vars/worker2-var.yml
+#   roles:
+#     - homeserver.vms.makevm
+
+# - name: Creates a VM that is worker3
+#   hosts: proxmoxnodes
+#   vars_files: 
+#     - ./vars/worker3-var.yml
+#   roles:
+#     - homeserver.vms.makevm
+
+# - name: Pause for user confirmation of VMs finished booting
+#   hosts: localhost
+#   tasks:
+#   - name: Pause for user confirmation of VMs finished booting.
+#     ansible.builtin.pause:
+#       prompt: "Press Enter to continue when all vms have started"
+
+# - name: Install's K8 and its dependants on the cluster machines
+#   hosts: 
+#     - controllers
+#     - workers
+#   roles:
+#     - homeserver.k8.install
+
+- name: Install's useful cli tools for managing k8 cluster
+  hosts: 
+    - controllers
+  roles:
+    - homeserver.k8.k8Tools
+
+# - name: Installs cilium on the cluster
+#   hosts: 
+#     - controllers
+#   roles:
+#     - homeserver.k8.cilium
+
+# - name: Installs longhorn in the cluster.
+#   hosts: 
+#     - controllers
+#     - workers
+#   roles:
+#     - homeserver.k8.longhorn
+
+# - name: Pause for user confirmation of creation of HDs
+#   hosts: localhost
+#   tasks:
+#   - name: Pause for user confirmation of creation of HDs
+#     ansible.builtin.pause:
+#       prompt: "Press Enter to continue when you have created the workers addional HDs"
+
+# - name: Formatts disks for longhorn
+#   hosts: 
+#     - workers
+#   roles:
+#     - homeserver.vms.formattdisk

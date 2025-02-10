@@ -1,0 +1,57 @@
+---
+- name: Set up Longhorn prereq
+  block:
+  - name: Insert lines into multipath config
+    ansible.builtin.lineinfile:
+      path: /etc/multipath.conf
+      line: "{{ item }}"
+      state: present
+    loop:
+      - "blacklist {"
+      - "    devnode \"^sd[a-z0-9]+\""
+      - "} "
+
+  - name: Restart multipathd service
+    ansible.builtin.systemd:
+      name: multipathd
+      state: restarted
+
+  - name: Install packages needed for longHorn
+    ansible.builtin.apt:
+      name:
+        - cryptsetup
+        - dmsetup
+        - nfs-common
+      state: present  
+
+  - name: Install Longhorn
+    ansible.builtin.shell:
+      cmd: "modprobe dm-crypt"
+      chdir: /tmp
+
+  - name: Install Longhorn
+    ansible.builtin.shell:
+      cmd: "echo dm-crypt | sudo tee /etc/modules-load.d/dm-crypt.conf"
+      chdir: /tmp
+  become: true
+
+- name: Install Longhorn
+  block:
+  - name: Install Longhorn
+    ansible.builtin.shell:
+      cmd: "kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/v1.7.2/deploy/longhorn.yaml"
+      chdir: /tmp
+
+  - name: Copy over Longhorn Ingress and IP Pool yaml
+    ansible.builtin.template:
+      src: longhorn-ingress.yaml
+      dest: /tmp/longhorn-ingress.yaml
+
+  - name: Install Longhorn Ingress and IP Pool
+    ansible.builtin.shell:
+      cmd: "kubectl apply -f longhorn-ingress.yaml"
+      chdir: /tmp
+
+  become: true
+  when: "'controllers' in group_names"
+

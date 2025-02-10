@@ -1,0 +1,74 @@
+---
+- name: "Checking if private key file exists"
+  ansible.builtin.stat:
+    path: /etc/wireguard/keys/client_{{ name }}_private.key
+  register: user_exists 
+
+- name: Install Wiregurad and set up vpn
+  block:
+  - name: "Creating the server_private.key and server public_key"
+    ansible.builtin.shell:
+      cmd: wg genkey | tee client_{{ name }}_private.key | wg pubkey > client_{{ name }}_public.key
+      chdir: /etc/wireguard/keys
+
+  - name: Read client_{{ name }}_private.key contents
+    ansible.builtin.shell:
+      cmd: cat client_{{ name }}_private.key
+      chdir: /etc/wireguard/keys
+    register: client_private_key
+
+  - name: Read client_{{ name }}_public.key contents
+    ansible.builtin.shell:
+      cmd: cat client_{{ name }}_public.key
+      chdir: /etc/wireguard/keys
+    register: client_public_key
+
+  - name: Read server_public.key contents
+    ansible.builtin.shell:
+      cmd: cat server_public.key
+      chdir: /etc/wireguard/keys
+    register: server_public_key
+
+  - name: Copy over wiregaurd client cont exention
+    ansible.builtin.template:
+      src: server-wg0.conf
+      dest: /etc/wireguard/server-wg0.conf
+
+  - name: "extend conf by appending new conf"
+    ansible.builtin.shell:
+      cmd: cat server-wg0.conf >> wg0.conf
+      chdir: /etc/wireguard/
+
+  - name: "add newline to end of conf"
+    ansible.builtin.shell:
+      cmd: echo "/n" >> wg0.conf
+      chdir: /etc/wireguard/      
+
+  - name: "Cleanup server-conf"
+    ansible.builtin.shell:
+      cmd: rm server-wg0.conf
+      chdir: /etc/wireguard/
+
+  - name: Copy over wiregaurd client config to fill in
+    ansible.builtin.template:
+      src: client-wg0.conf
+      dest: "/etc/wireguard/client-{{ name }}-wg0.conf"
+
+  - name: Fetch the client config
+    ansible.builtin.fetch:
+      src: /etc/wireguard/client-{{ name }}-wg0.conf
+      dest: "{{ return_dir }}"
+      flat: yes
+
+  - name: "Restart WG 1/2"
+    ansible.builtin.shell:
+      cmd: wg-quick down wg0
+      chdir: /etc/wireguard/
+
+  - name: "Restart WG 2/2"
+    ansible.builtin.shell:
+      cmd: wg-quick up wg0
+      chdir: /etc/wireguard/
+
+  become: true
+  when: not user_exists.stat.exists

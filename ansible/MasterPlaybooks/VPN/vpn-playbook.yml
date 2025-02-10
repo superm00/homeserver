@@ -1,0 +1,34 @@
+---
+- name: Creates a VM out of a existing proxmox template with a spesific hardware configruation.
+  hosts: proxmoxnodes
+  tags:
+    - vm_setup
+  vars_files: 
+    - vpn-var.yml
+  roles:
+    - homeserver.vms.makevm
+
+- name: Creates a wireguard vpn with no clients
+  hosts: vpn
+  tags:
+  - wireguard_setup
+  roles:
+    - homeserver.vpn.init
+
+- name: Creates wireguard vpn client -- Matt
+  hosts: vpn
+  tags:
+  - create_users
+  vars_files: 
+    - vpn-clients/vpn-var-matt.yml
+  roles:
+    - homeserver.vpn.client_create
+
+- name: Creates wireguard vpn client -- Jonathan
+  hosts: vpn
+  tags:
+  - create_users
+  vars_files: 
+    - vpn-clients/vpn-var-jonathan.yml
+  roles:
+    - homeserver.vpn.client_create

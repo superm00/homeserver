@@ -1,0 +1,9 @@
+AWX:
+  enabled: true
+  name: awx
+  spec:
+    admin_user: admin
+    postgres_data_volume_init: true
+
+  postgres:
+    enabled: false

@@ -1,0 +1,38 @@
+---
+- name: Install k9s
+  block:
+  - name: Download k9s tar
+    ansible.builtin.get_url:
+      url: https://github.com/derailed/k9s/releases/download/v0.32.7/k9s_Linux_amd64.tar.gz
+      dest: /tmp/k9s_Linux_amd64.tar.gz
+
+  - name: Exract k9s into path
+    ansible.builtin.shell:
+      cmd: tar xzvfC k9s_Linux_amd64.tar.gz /usr/local/bin
+      chdir: /tmp
+
+  - name: remove junk from tar
+    ansible.builtin.shell:
+      cmd: rm LICENSE README.md
+      chdir: /usr/local/bin
+  become: true
+
+- name: Install helm
+  block:
+  - name: Download Helm tar
+    ansible.builtin.get_url:
+      url: https://get.helm.sh/helm-v3.17.0-linux-amd64.tar.gz
+      dest: /tmp/linux-amd64.tar.gz
+
+  - name: Exract k9s into path
+    ansible.builtin.shell:
+      cmd: tar xzvfC linux-amd64.tar.gz /tmp
+      chdir: /tmp
+
+  - name: Move Helm binary to /usr/local/bin
+    ansible.builtin.copy:
+      src: /tmp/linux-amd64/helm
+      dest: /usr/local/bin/helm
+      mode: '0755'
+      remote_src: true
+  become: true

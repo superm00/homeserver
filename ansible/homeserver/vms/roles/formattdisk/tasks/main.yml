@@ -1,0 +1,31 @@
+---
+- name: Formatt Disk
+  block:
+  - name: Format the new partition with ext4
+    ansible.builtin.filesystem:
+      fstype: ext4
+      dev: "{{ new_disk }}"
+
+  - name: Create mount point directory
+    ansible.builtin.file:
+      path: "/mnt/{{ new_disk }}"
+      state: directory
+
+  - name: Mount the new partition
+    ansible.builtin.mount:
+      path: "/mnt/{{ new_disk }}"
+      src: "{{ new_disk }}"
+      fstype: ext4
+      state: mounted
+
+  - name: Get the UUID of the new partition
+    command: "blkid -s UUID -o value {{ new_disk }}"
+    register: partition_uuid
+    changed_when: false
+
+  - name: Add the new disk to /etc/fstab
+    ansible.builtin.lineinfile:
+      path: /etc/fstab
+      line: "UUID={{ partition_uuid.stdout }} /mnt/{{ new_disk }} ext4 defaults 0 2"
+      create: yes
+  become: true

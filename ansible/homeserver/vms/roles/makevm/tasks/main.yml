@@ -1,0 +1,50 @@
+---
+- name: "Clone template"
+  ansible.builtin.shell:
+    cmd: "qm clone {{ template_id }} {{ vm_id }} --name {{ vm_name }}"
+    chdir: /var/lib/vz/template/iso
+
+- name: "Setting user name"
+  ansible.builtin.shell:
+    cmd: "qm set {{ vm_id }} --ciuser {{ vm_name }}"
+    chdir: /var/lib/vz/template/iso
+
+- name: "Setting compute and memory"
+  ansible.builtin.shell:
+    cmd: "qm set {{ vm_id }} --memory {{ vm_memory }} --cores {{ vm_cores }}"
+    chdir: /var/lib/vz/template/iso
+
+- name: "Reszing main drive"
+  ansible.builtin.shell:
+    cmd: "qm resize {{ vm_id }} scsi0 +{{ resize_amount }}"
+    chdir: /var/lib/vz/template/iso
+
+- name: "Creating tmp key"
+  ansible.builtin.shell:
+    cmd: "echo {{ ssh_key }} > tmpkey.pub"
+    chdir: /tmp
+
+- name: "Setting SSH Key"
+  ansible.builtin.shell:
+    cmd: "qm set {{ vm_id }} --sshkey /tmp/tmpkey.pub"
+    chdir: /var/lib/vz/template/iso
+
+- name: "Removing tmp key"
+  ansible.builtin.shell:
+    cmd: "rm tmpkey.pub"
+    chdir: /tmp
+
+- name: Setting up static address
+  ansible.builtin.shell:
+    cmd: "qm set {{ vm_id }} --ipconfig0 ip={{ static_ip }},gw=192.168.86.1"
+    chdir: /var/lib/vz/template/iso
+
+- name: Setting up DNS Server
+  ansible.builtin.shell:
+    cmd: "qm set {{ vm_id }} --nameserver 8.8.8.8"
+    chdir: /var/lib/vz/template/iso
+
+- name: "Starting vm"
+  ansible.builtin.shell:
+    cmd: "qm start {{ vm_id }}"
+    chdir: /var/lib/vz/template/iso

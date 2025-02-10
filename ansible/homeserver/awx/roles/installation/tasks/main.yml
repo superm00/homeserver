@@ -1,0 +1,41 @@
+---
+# tasks file for installation
+# go from here https://github.com/ansible-community/awx-operator-helm?tab=readme-ov-file#getting-started
+
+- name: Install AWX
+  block:
+  - name: Add AWX Operator Helm Repo
+    ansible.builtin.shell:
+      cmd: "helm repo add awx-operator https://ansible-community.github.io/awx-operator-helm/"
+      chdir: /tmp
+
+  - name: Create AWX namespace
+    ansible.builtin.shell:
+      cmd: "kubectl create namespace awx"
+      chdir: /tmp
+
+  - name: Copy the values for AWX Helmchart
+    ansible.builtin.copy:
+      src: values.yaml
+      dest: /tmp/values.yaml
+
+  - name: Create Admin Password Secret
+    ansible.builtin.shell:
+      cmd: "kubectl create secret generic awx-admin-password --from-literal=password={{ awx_admin_password }} -n awx"
+      chdir: /tmp
+
+  - name: Install AWX within Helm
+    ansible.builtin.shell:
+      cmd: "helm install awx-operator awx-operator/awx-operator -n awx -f values.yaml"
+      chdir: /tmp
+
+  - name: Copy over AWX Ingress and IP Pool yaml
+    ansible.builtin.template:
+      src: awx-ingress.yaml
+      dest: /tmp/awx-ingress.yaml
+
+  - name: Install AWX Ingress and IP Pool
+    ansible.builtin.shell:
+      cmd: "kubectl apply -f awx-ingress.yaml"
+      chdir: /tmp
+  become: true

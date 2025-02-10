@@ -1,0 +1,4 @@
+---
+img_file: noble-server-cloudimg-amd64.img
+template_id: 1000
+template_name: ubuntu-2404-cloudinit-template

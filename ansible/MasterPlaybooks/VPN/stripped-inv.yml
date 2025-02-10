@@ -1,0 +1,9 @@
+proxmoxnodes:
+  hosts: 
+    node:
+
+vpns:
+  hosts: 
+    vpn:
+      server_ip: 192.168.XXX.XXX/24
+      server_port: 51820 #Default port

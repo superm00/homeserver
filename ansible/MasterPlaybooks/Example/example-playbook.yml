@@ -1,0 +1,8 @@
+---
+- name: Creates a VM out of a existing proxmox template with a spesific hardware configruation.
+  hosts: proxmoxnodes
+  vars_files: 
+    - example-var.yml
+  roles:
+    - homeserver.vms.makevm
+

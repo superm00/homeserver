@@ -1,0 +1,45 @@
+---
+- name: Copy the cloudimg across. 
+  ansible.builtin.copy:
+    src: "{{ img_file }}"
+    dest: /var/lib/vz/template/iso
+
+- name: Starting template
+  ansible.builtin.shell:
+    cmd: "qm create {{ template_id }} --name {{ template_name }} --net0 virtio,bridge=vmbr0 --memory 2000 --cores 2"
+    chdir: /var/lib/vz/template/iso
+
+- name: Add disk to image
+  ansible.builtin.shell:
+    cmd: "qm importdisk {{ template_id }} {{ img_file }} local-zfs"
+    chdir: /var/lib/vz/template/iso
+
+- name: Adding file system to image
+  ansible.builtin.shell:
+    cmd: "qm set {{ template_id }} --scsihw virtio-scsi-pci --scsi0 local-zfs:vm-{{ template_id }}-disk-0"
+    chdir: /var/lib/vz/template/iso
+
+- name: Setting boot disk
+  ansible.builtin.shell:
+    cmd: "qm set {{ template_id }} --boot c --bootdisk scsi0"
+    chdir: /var/lib/vz/template/iso
+
+- name: Alocating local space.
+  ansible.builtin.shell:
+    cmd: "qm set {{ template_id }} --ide2 local-zfs:cloudinit"
+    chdir: /var/lib/vz/template/iso
+
+- name: adding serial socket
+  ansible.builtin.shell:
+    cmd: "qm set {{ template_id }} --serial0 socket --vga serial0"
+    chdir: /var/lib/vz/template/iso
+
+- name: enabling qemu-guest-agent
+  ansible.builtin.shell:
+    cmd: "qm set {{ template_id }} --agent enabled=1"
+    chdir: /var/lib/vz/template/iso
+
+- name: Creating template.
+  ansible.builtin.shell:
+    cmd: "qm template {{ template_id }}"
+    chdir: /var/lib/vz/template/iso

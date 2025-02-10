@@ -1,0 +1,6 @@
+---
+- name: Installs AWX on the cluster
+  hosts: controllers
+  roles:
+    - homeserver.awx.installation
+

@@ -1,0 +1,9 @@
+---
+vm_id: 101
+vm_name: test-vm
+vm_memory: 2000
+vm_cores: 2
+template_id: 1000
+ssh_key: "InsertKey"
+resize_amount: 10G
+static_ip: dhcp
